@@ -134,7 +134,7 @@ impl Segment {
 
         Self {
             label: name,
-            name: partition.pretty_name(),
+            name: partition.name(),
             partition_type: type_str,
             size: partition.size,
             offset: partition.offset,

@@ -1,6 +1,6 @@
 [package]
 name = "hardware"
-description = "Prelude for hardware related crates"
+description = "Prelude and converged functionality for dbus and disks-rs abstractions"
 version = "0.1.0"
 edition = "2024"
 

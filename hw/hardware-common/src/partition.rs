@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 pub trait Partition {
-    fn pretty_name(&self) -> String;
+    fn name(&self) -> String;
 
     fn connect(&mut self) -> impl std::future::Future<Output = Result<()>> + Send;
 

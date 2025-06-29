@@ -52,6 +52,9 @@ package = "superblock"
 git = "https://github.com/AerynOS/disks-rs.git"
 package = "partitioning"
 
+[workspace.dependencies.disks-rs-types]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "types"
 
 
 [workspace.dependencies.i18n-embed]

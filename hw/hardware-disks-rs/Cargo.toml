@@ -11,3 +11,6 @@ hardware-common = { workspace = true }
 disks-rs = { workspace = true }
 disks-rs-partitioning = { workspace = true }
 disks-rs-superblock = { workspace = true }
+disks-rs-types = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

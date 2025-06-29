@@ -113,7 +113,7 @@ impl PartitionModel{
 
 
 impl Partition for PartitionModel {
-     fn pretty_name(&self) -> String {
+     fn name(&self) -> String {
         // let mut name = self.name.clone();
         // if name.len() == 0 {
         //     name = format!("Partition {}", &self.number);
