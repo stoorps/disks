@@ -8,3 +8,4 @@ edition = "2024"
 serde = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
+num-format = { workspace = true }
