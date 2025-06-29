@@ -1,9 +1,9 @@
 [workspace]
 members = [
     "disks-dbus",
-    "disks",
+    "disks-ui",
 ]
-default-members = ["disks"]
+default-members = ["disks-ui"]
 resolver = "2"
 
 [workspace.dependencies]
