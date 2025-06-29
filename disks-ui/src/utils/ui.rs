@@ -1,4 +1,4 @@
-use super::{pretty_to_bytes};
+use crate::utils::{pretty_to_bytes};
 use std::borrow::Cow;
 
 use cosmic::{
