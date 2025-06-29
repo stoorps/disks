@@ -350,10 +350,10 @@ impl Application for AppModel {
 
                     while let Some(event) = stream.next().await {
                         match event {
-                            cosmos_dbus::disks::DeviceEvent::Added(s) => {
+                            disks_dbus::disks::DeviceEvent::Added(s) => {
                                 let _ = c.send(Message::DriveAdded(s)).await;
                             }
-                            cosmos_dbus::disks::DeviceEvent::Removed(s) => {
+                            disks_dbus::disks::DeviceEvent::Removed(s) => {
                                 let _ = c.send(Message::DriveRemoved(s)).await;
                             }
                         }

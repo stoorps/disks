@@ -1,4 +1,4 @@
-app-title = Cosmos Disks
+app-title = Disks
 about = About
 view = View
 welcome = Welcome to COSMIC! ✨

@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Cosmos Disks
-Comment=An application for the COSMIC™ desktop
+Name=Disks
+Comment=Disk utility for the COSMIC™ desktop
 Type=Application
-Icon=com.cosmos.Disks
-Exec=cosmos-disks %F
+Icon=com.cosmic.Disks
+Exec=disks %F
 Terminal=false
 StartupNotify=true
 Categories=COSMIC
