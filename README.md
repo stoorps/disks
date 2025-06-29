@@ -7,8 +7,6 @@ The code (which is currently in a rough prototyping phase) is available here.  T
 
 The goal of this project is to ship as a part of the [Cosmic Utilities](https://github.com/cosmic-utils) organisation once it's ready.
 
-If you work over at System76 and would like to chat, hit me up!
-
 ![Screenshot of cosmos-disks](https://github.com/stoorps/cosmos-apps/blob/main/screenshots/cosmos-disks.png)
 
 
