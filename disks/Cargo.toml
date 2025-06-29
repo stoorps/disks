@@ -1,13 +1,15 @@
 [package]
 name = "disks"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "MPL-2.0"
 description = "A Disk utility for the COSMIC™ desktop"
 repository = "https://github.com/stoorps/disks.git"
 
 [build-dependencies]
 vergen = { workspace = true }
+vergen-git2 = { workspace = true }
+vergen-gitcl = { workspace = true }
 
 [dependencies]
 futures-util = { workspace = true }
