@@ -1,0 +1,10 @@
+[package]
+name = "hardware"
+description = "Prelude for hardware related crates"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hardware-dbus.workspace = true
+hardware-common.workspace = true
+hardware-disks-rs.workspace = true

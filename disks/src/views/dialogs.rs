@@ -9,7 +9,7 @@ use cosmic::{
     Element,
 };
 use crate::utils::{bytes_to_pretty, labelled_spinner};
-use disks_common::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
+use hardware::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
 use std::borrow::Cow;
 
 pub fn confirmation<'a>(
@@ -62,7 +62,7 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
 
             CreateMessage::SizeUpdate((len - v) as u64).into()
         }),
-    
+
         toggler(create_clone.erase)
             .label("Erase")
             .on_toggle(|v| CreateMessage::EraseUpdate(v).into()),
@@ -73,10 +73,10 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         ),
         checkbox("Password Protected", create.password_protected)
             .on_toggle(|v| CreateMessage::PasswordProectedUpdate(v).into()),
-       
+
     ];
 
-    
+
     if create.password_protected
     {
         content = content.push( text_input::secure_input("", create_clone.password, None, true)
@@ -87,7 +87,7 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         .label("Confirm")
         .on_input(|v| CreateMessage::ConfirmedPasswordUpdate(v).into()));
     }
-  
+
 
 
     let mut continue_button = button::destructive("Continue");

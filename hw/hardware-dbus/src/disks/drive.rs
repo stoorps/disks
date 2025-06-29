@@ -7,7 +7,7 @@ use zbus::{
     zvariant::OwnedObjectPath, Connection
 };
 
-use disks_common::{get_usage_data, CreatePartitionInfo, Drive, COMMON_PARTITION_TYPES};
+use hardware_common::{get_usage_data, CreatePartitionInfo, Drive, COMMON_PARTITION_TYPES};
 
 use super::{manager::UDisks2ManagerProxy, PartitionModel};
 

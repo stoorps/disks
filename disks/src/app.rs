@@ -14,8 +14,8 @@ use cosmic::widget::text::heading;
 use cosmic::widget::{self, container, icon, menu, nav_bar, Space};
 use cosmic::{iced_widget, Application, ApplicationExt, Apply, Element};
 use crate::utils::{bytes_to_pretty, labelled_info, link_info};
-use disks_common::{Drive, Partition, CreatePartitionInfo};
-use disks_dbus::disks::{DiskManager, DriveModel};
+use hardware::{Drive, Partition, CreatePartitionInfo};
+use hardware::disks::{DiskManager, DriveModel};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -351,10 +351,10 @@ impl Application for AppModel {
 
                     while let Some(event) = stream.next().await {
                         match event {
-                            disks_dbus::disks::DeviceEvent::Added(s) => {
+                            hardware::disks::DeviceEvent::Added(s) => {
                                 let _ = c.send(Message::DriveAdded(s)).await;
                             }
-                            disks_dbus::disks::DeviceEvent::Removed(s) => {
+                            hardware::disks::DeviceEvent::Removed(s) => {
                                 let _ = c.send(Message::DriveRemoved(s)).await;
                             }
                         }

@@ -9,8 +9,8 @@ use cosmic::{
     Element, Task,
 };
 use crate::utils::bytes_to_pretty;
-use disks_dbus::disks::{DriveModel, PartitionModel};
-use disks_common::{CreatePartitionInfo, Drive, Partition};
+use hardware::disks::{DriveModel, PartitionModel};
+use hardware::{CreatePartitionInfo, Drive, Partition};
 use crate::app::{Message, ShowDialog};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -109,7 +109,7 @@ impl Segment {
             is_free_space: true,
             width: 0,
             partition: None,
-            
+
         }
     }
 
@@ -344,7 +344,7 @@ impl VolumesControl {
             return Task::done(Message::CloseDialog.into()).chain(task);
         }
         VolumesControlMessage::CreateMessage(create_message) => {
-                
+
             let d = match dialog.as_mut()
             {
                 Some(d) => d,
@@ -373,7 +373,7 @@ impl VolumesControl {
                             let model = self.model.clone();
                             let task = Task::perform(
                                         async move {
-                                            
+
 
                                             match model.create_partition(create_partition_info).await {
                                                 Ok(_) => match DriveModel::get_drives().await {
@@ -391,7 +391,7 @@ impl VolumesControl {
                                             }
                                         },
                             );
-                
+
                             return Task::done(Message::CloseDialog.into()).chain(task);
                         }
                     }
@@ -428,7 +428,7 @@ impl VolumesControl {
             .collect();
 
         let selected = self.segments.get(self.selected_segment).cloned().unwrap(); // Handle unwrap
-        
+
         let mut action_bar: Vec<Element<Message>> = vec![];
 
         action_bar.push(match selected.partition {
@@ -440,7 +440,7 @@ impl VolumesControl {
             }
             }
             None =>widget::button::custom(icon::from_name( "list-add-symbolic")).on_press(Message::Dialog(ShowDialog::AddPartition(selected.get_create_info())).into()),
- 
+
         }.into());
 
         //TODO Get better icons

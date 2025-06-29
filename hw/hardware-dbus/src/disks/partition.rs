@@ -3,7 +3,7 @@ use enumflags2::{bitflags, BitFlags};
 use anyhow::Result;
 use udisks2::{block::BlockProxy, filesystem::FilesystemProxy, partition::{PartitionFlags, PartitionProxy}, Client};
 use zbus::{zvariant::OwnedObjectPath, Connection};
-use disks_common::{Partition, Usage};
+use hardware_common::{Partition, Usage};
 use super::{ DiskError};
 
 
@@ -44,7 +44,7 @@ impl PartitionModel{
                     false => None,
                 }
 
-            } 
+            }
         };
 
 
@@ -198,7 +198,7 @@ impl Partition for PartitionModel {
         }
 
 
-        
+
         Ok(())
     }
 
@@ -225,7 +225,7 @@ impl Partition for PartitionModel {
         }
 
 
-        
+
         Ok(())
     }
 
@@ -320,7 +320,7 @@ impl Partition for PartitionModel {
     }
 
 
-    //TODO: implement. creates a *.img of self. 
+    //TODO: implement. creates a *.img of self.
      async fn create_image(&self, output_path: String) ->Result<()>
     {
         if self.connection.is_none()
@@ -329,7 +329,7 @@ impl Partition for PartitionModel {
         }
         Ok(())
     }
-    
+
 
 
 

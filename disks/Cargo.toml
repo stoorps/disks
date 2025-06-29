@@ -23,5 +23,4 @@ tracing-subscriber = { workspace = true }
 num-format = { workspace = true}
 anyhow = { workspace = true }
 
-disks-dbus = { workspace = true }
-disks-common = { workspace = true }
+hardware = { workspace = true }

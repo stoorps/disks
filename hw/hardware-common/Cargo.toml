@@ -1,5 +1,6 @@
 [package]
-name = "disks-common"
+name = "hardware-common"
+description = "Common utilities and types for hardware related crates"
 version = "0.1.0"
 edition = "2024"
 

@@ -1,0 +1,7 @@
+[package]
+name = "hardware-disks-rs"
+description = "DBus interface for disk management"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
