@@ -1,9 +1,9 @@
 [workspace]
 members = [
     "hw/hardware-dbus",
-    "disks", "hw/hardware-common", "hw/hardware", "hw/hardware-disks-rs",
+    "disks-ui", "hw/hardware-common", "hw/hardware", "hw/hardware-disks-rs",
 ]
-default-members = ["disks"]
+default-members = ["disks-ui", "hw/hardware-disks-rs"]
 resolver = "2"
 
 [workspace.dependencies]
