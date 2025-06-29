@@ -44,6 +44,14 @@ vergen-gitcl = {version  = "1.0.8" }
 git = "https://github.com/AerynOS/disks-rs.git"
 package = "disks"
 
+[workspace.dependencies.disks-rs-superblock]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "superblock"
+
+[workspace.dependencies.disks-rs-partitioning]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "partitioning"
+
 
 
 [workspace.dependencies.i18n-embed]

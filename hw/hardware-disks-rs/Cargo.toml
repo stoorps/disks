@@ -5,3 +5,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+hardware-common = { workspace = true }
+disks-rs = { workspace = true }
+disks-rs-partitioning = { workspace = true }
+disks-rs-superblock = { workspace = true }
