@@ -8,7 +8,7 @@ use cosmic::{
     },
     Element, Task,
 };
-use crate::utils::bytes_to_pretty;
+use hardware::bytes_to_pretty;
 use hardware::disks::{DriveModel, PartitionModel};
 use hardware::{CreatePartitionInfo, Drive, Partition};
 use crate::app::{Message, ShowDialog};

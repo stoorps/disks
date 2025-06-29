@@ -8,7 +8,8 @@ use cosmic::{
     },
     Element,
 };
-use crate::utils::{bytes_to_pretty, labelled_spinner};
+use hardware::bytes_to_pretty;
+use crate::utils::{labelled_spinner};
 use hardware::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
 use std::borrow::Cow;
 
@@ -40,7 +41,7 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
     let size_pretty = bytes_to_pretty( &create.size, false);
     let free_pretty = bytes_to_pretty( &create.size, false);
 
-    let step = utils::get_step(&create.size);
+    let step = hardware::get_step(&create.size);
     println!("step: {}", step);
 
     let create_clone = create.clone();
