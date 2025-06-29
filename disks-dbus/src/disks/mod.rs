@@ -1,14 +1,10 @@
 mod drive;
 mod partition;
-mod usage;
 mod manager;
-mod partition_type;
 
 pub use drive::*;
 pub use partition::PartitionModel;
-pub use usage::*;
 pub use manager::*;
-pub use partition_type::*;
 use thiserror::Error;
 
 // async fn get_size(path: impl Into<String> + std::fmt::Display) -> Result<String> {

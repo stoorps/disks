@@ -2,11 +2,9 @@ use std::{ collections::HashMap, path::Path};
 use enumflags2::{bitflags, BitFlags};
 use anyhow::Result;
 use udisks2::{block::BlockProxy, filesystem::FilesystemProxy, partition::{PartitionFlags, PartitionProxy}, Client};
-use zbus::{
-    zvariant::OwnedObjectPath, Connection}
-;
-
-use super::{ DiskError, Usage};
+use zbus::{zvariant::OwnedObjectPath, Connection};
+use disks_common::{Partition, Usage};
+use super::{ DiskError};
 
 
 #[derive(Debug, Clone)]
@@ -30,20 +28,8 @@ pub struct PartitionModel {
 
 }
 
-impl PartitionModel {
-    pub fn pretty_name(&self) -> String {
-        // let mut name = self.name.clone();
-        // if name.len() == 0 {
-        //     name = format!("Partition {}", &self.number);
-        // } else {
-        //     name = format!("Partition {}: {}", &self.number, name);
-        // }
-
-        // name
-        format!("Partition {}", &self.number)
-    }
-
-    pub(crate) async fn from_proxy(client: &Client, drive_path: String, partition_path: OwnedObjectPath, usage: Option<Usage>, 
+impl PartitionModel{
+    pub async fn from_proxy(client: &Client, drive_path: String, partition_path: OwnedObjectPath, usage: Option<Usage>,
         partition_proxy: &PartitionProxy<'_>, block_proxy: &BlockProxy<'_>) -> Result<Self>
     {
         let device_path = match &usage
@@ -94,8 +80,55 @@ impl PartitionModel {
         })
     }
 
+        /// Returns informating about the given partition that is suitable for presentation in an user
+    /// interface in a single line of text.
+    ///
+    /// The returned string is localized and includes things like the partition type, flags (if
+    /// any) and name (if any).
+    ///
+    /// # Errors
+    /// Returns an errors if it fails to read any of the aforementioned information.
+    pub async fn partition_info(
+        client: &Client,
+        partition: &PartitionProxy<'_>,
+    ) -> Result<String> {
+        let flags = partition.flags().await?;
+        let table = client.partition_table(partition).await?;
+        let mut flags_str = String::new();
 
-    pub async fn connect(&mut self) -> Result<()>
+        let type_str = match client
+            .partition_type_for_display(&table.type_().await?, &partition.type_().await?)
+        {
+            Some(val) => val.to_owned(),
+            _ => partition.type_().await?,
+        };
+
+
+        println!("{type_str}");
+
+        Ok(type_str)
+    }
+
+}
+
+
+impl Partition for PartitionModel {
+     fn pretty_name(&self) -> String {
+        // let mut name = self.name.clone();
+        // if name.len() == 0 {
+        //     name = format!("Partition {}", &self.number);
+        // } else {
+        //     name = format!("Partition {}: {}", &self.number, name);
+        // }
+
+        // name
+        format!("Partition {}", &self.number)
+    }
+
+
+
+
+    async fn connect(&mut self) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -106,7 +139,7 @@ impl PartitionModel {
     }
 
 
-    pub async fn mount(&self) -> Result<()>
+     async fn mount(&self) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -120,7 +153,7 @@ impl PartitionModel {
         Ok(())
     }
 
-    pub async fn unmount(&self) -> Result<()>
+     async fn unmount(&self) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -135,7 +168,7 @@ impl PartitionModel {
     }
 
 
-    pub async fn delete(&self) -> Result<()>
+     async fn delete(&self) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -157,7 +190,7 @@ impl PartitionModel {
     }
 
 
-    pub async fn format(&self, name: String, erase: bool, partion_type: String) -> Result<()>
+     async fn format(&self, name: String, erase: bool, partion_type: String) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -171,7 +204,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn edit_partition(&self, partition_type: String, name: String, flags: u64) -> Result<()>
+     async fn edit_partition(&self, partition_type: String, name: String, flags: u64) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -184,7 +217,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn edit_filesystem_label(&self, label: String) -> Result<()>
+     async fn edit_filesystem_label(&self, label: String) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -198,7 +231,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn change_passphrase(&self) ->Result<()>
+     async fn change_passphrase(&self) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -209,7 +242,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn resize(&self, new_size_bytes: u64) ->Result<()>
+     async fn resize(&self, new_size_bytes: u64) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -220,7 +253,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn check_filesystem(&self) ->Result<()>
+     async fn check_filesystem(&self) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -231,7 +264,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn repair_filesystem(&self) ->Result<()>
+     async fn repair_filesystem(&self) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -242,7 +275,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn take_ownership(&self, recursive: bool) ->Result<()>
+     async fn take_ownership(&self, recursive: bool) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -253,7 +286,7 @@ impl PartitionModel {
 
 
     //TODO: implement. See how edit mount options -> User session defaults works in gnome-disks.
-    pub async fn default_mount_options(&self) -> Result<()>
+     async fn default_mount_options(&self) -> Result<()>
     {
         if self.connection.is_none()
         {
@@ -264,7 +297,7 @@ impl PartitionModel {
 
 
     //TODO: implement. Look at gnome-disks -> partition -> edit mount options. Likely make all params optional.
-    pub async fn edit_mount_options(&self, mount_at_startup: bool, show_in_ui: bool, requre_auth: bool,display_name: Option<String>,
+     async fn edit_mount_options(&self, mount_at_startup: bool, show_in_ui: bool, requre_auth: bool,display_name: Option<String>,
                                     icon_name: Option<String>, symbolic_icon_name: Option<String>,  options: String,
                                     mount_point: String, identify_as: String, file_system_type: String) ->Result<()>
     {
@@ -277,7 +310,7 @@ impl PartitionModel {
 
 
     //TODO: implement
-    pub async fn edit_encrytion_options(&self) ->Result<()>
+     async fn edit_encrytion_options(&self) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -288,7 +321,7 @@ impl PartitionModel {
 
 
     //TODO: implement. creates a *.img of self. 
-    pub async fn create_image(&self, output_path: String) ->Result<()>
+     async fn create_image(&self, output_path: String) ->Result<()>
     {
         if self.connection.is_none()
         {
@@ -296,37 +329,9 @@ impl PartitionModel {
         }
         Ok(())
     }
-
-
     
-        /// Returns informating about the given partition that is suitable for presentation in an user
-    /// interface in a single line of text.
-    ///
-    /// The returned string is localized and includes things like the partition type, flags (if
-    /// any) and name (if any).
-    ///
-    /// # Errors
-    /// Returns an errors if it fails to read any of the aforementioned information.
-    async fn partition_info(
-        client: &Client,
-        partition: &PartitionProxy<'_>,
-    ) -> Result<String> {
-        let flags = partition.flags().await?;
-        let table = client.partition_table(partition).await?;
-        let mut flags_str = String::new();
-
-        let type_str = match client
-            .partition_type_for_display(&table.type_().await?, &partition.type_().await?)
-        {
-            Some(val) => val.to_owned(),
-            _ => partition.type_().await?,
-        };
 
 
-        println!("{type_str}");
 
-        Ok(type_str)
+
     }
-
-
-}

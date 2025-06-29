@@ -9,7 +9,8 @@ use cosmic::{
     Element, Task,
 };
 use crate::utils::bytes_to_pretty;
-use disks_dbus::disks::{CreatePartitionInfo, DriveModel, PartitionModel};
+use disks_dbus::disks::{DriveModel, PartitionModel};
+use disks_common::{CreatePartitionInfo, Drive, Partition};
 use crate::app::{Message, ShowDialog};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

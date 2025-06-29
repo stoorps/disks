@@ -9,7 +9,7 @@ use cosmic::{
     Element,
 };
 use crate::utils::{bytes_to_pretty, labelled_spinner};
-use disks_dbus::disks::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
+use disks_common::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
 use std::borrow::Cow;
 
 pub fn confirmation<'a>(
