@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Cosmos Disks
+Comment=An application for the COSMIC™ desktop
+Type=Application
+Icon=com.cosmos.Disks
+Exec=cosmos-disks %F
+Terminal=false
+StartupNotify=true
+Categories=COSMIC
+Keywords=COSMIC
+MimeType=
