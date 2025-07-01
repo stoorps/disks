@@ -40,8 +40,8 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
 
     let size_pretty = bytes_to_pretty( &create.size, false);
     let free_pretty = bytes_to_pretty( &create.size, false);
-
     let step = hardware::get_step(&create.size);
+
     println!("step: {}", step);
 
     let create_clone = create.clone();
@@ -74,10 +74,8 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         ),
         checkbox("Password Protected", create.password_protected)
             .on_toggle(|v| CreateMessage::PasswordProectedUpdate(v).into()),
-
     ];
-
-
+  
     if create.password_protected
     {
         content = content.push( text_input::secure_input("", create_clone.password, None, true)
@@ -88,8 +86,6 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         .label("Confirm")
         .on_input(|v| CreateMessage::ConfirmedPasswordUpdate(v).into()));
     }
-
-
 
     let mut continue_button = button::destructive("Continue");
 

@@ -8,6 +8,7 @@ use cosmic::{
     },
     Element, Task,
 };
+
 use hardware::bytes_to_pretty;
 use hardware::disks::{DriveModel, PartitionModel};
 use hardware::{CreatePartitionInfo, Drive, Partition};
@@ -109,7 +110,6 @@ impl Segment {
             is_free_space: true,
             width: 0,
             partition: None,
-
         }
     }
 
@@ -344,7 +344,6 @@ impl VolumesControl {
             return Task::done(Message::CloseDialog.into()).chain(task);
         }
         VolumesControlMessage::CreateMessage(create_message) => {
-
             let d = match dialog.as_mut()
             {
                 Some(d) => d,
@@ -373,8 +372,6 @@ impl VolumesControl {
                             let model = self.model.clone();
                             let task = Task::perform(
                                         async move {
-
-
                                             match model.create_partition(create_partition_info).await {
                                                 Ok(_) => match DriveModel::get_drives().await {
                                                     Ok(drives) => Ok(drives),
@@ -428,19 +425,17 @@ impl VolumesControl {
             .collect();
 
         let selected = self.segments.get(self.selected_segment).cloned().unwrap(); // Handle unwrap
-
         let mut action_bar: Vec<Element<Message>> = vec![];
 
         action_bar.push(match selected.partition {
             Some(p) => {
                 match p.usage //TODO: More solid check than using the output of df to see if mounted.
-            {
-                Some(_) => widget::button::custom(icon::from_name( "media-playback-stop-symbolic")).on_press(VolumesControlMessage::Unmount.into()),
-                None =>widget::button::custom(icon::from_name( "media-playback-start-symbolic")).on_press(VolumesControlMessage::Mount.into()),
-            }
+              {
+                  Some(_) => widget::button::custom(icon::from_name( "media-playback-stop-symbolic")).on_press(VolumesControlMessage::Unmount.into()),
+                  None =>widget::button::custom(icon::from_name( "media-playback-start-symbolic")).on_press(VolumesControlMessage::Mount.into()),
+              }
             }
             None =>widget::button::custom(icon::from_name( "list-add-symbolic")).on_press(Message::Dialog(ShowDialog::AddPartition(selected.get_create_info())).into()),
-
         }.into());
 
         //TODO Get better icons
