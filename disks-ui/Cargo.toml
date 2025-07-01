@@ -20,7 +20,7 @@ tokio = { workspace = true }
 i18n-embed = { workspace = true }
 libcosmic = { workspace = true }
 tracing-subscriber = { workspace = true }
-
-disks-dbus = { workspace = true }
 num-format = { workspace = true}
 anyhow = { workspace = true }
+hardware = { workspace = true }
+
