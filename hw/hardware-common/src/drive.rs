@@ -9,10 +9,12 @@ pub trait Drive {
 
     fn power_off(&self) -> impl std::future::Future<Output = Result<()>> + Send;
 
+    fn create_partition(
+        &self,
+        info: CreatePartitionInfo,
+    ) -> impl std::future::Future<Output = Result<()>> + Send;
 
-    fn create_partition(&self, info: CreatePartitionInfo) -> impl std::future::Future<Output = Result<()>> + Send;
-
-   //async fn get_drive_paths(connection: &Connection) -> Result<Vec<DriveBlockPair>>;
+    //async fn get_drive_paths(connection: &Connection) -> Result<Vec<DriveBlockPair>>;
 
     //async fn get_drives() -> Result<Vec<DriveModel>>;
 }

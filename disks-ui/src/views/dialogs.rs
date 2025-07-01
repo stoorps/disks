@@ -1,16 +1,16 @@
 use super::volumes::CreateMessage;
+use crate::utils::labelled_spinner;
 use crate::{app::Message, utils};
 use cosmic::{
-    iced::{wgpu::util, Length},
+    Element,
+    iced::{Length, wgpu::util},
     iced_widget,
     widget::{
-        button, checkbox, container, dialog, dropdown, slider, spin_button, text_input, toggler
+        button, checkbox, container, dialog, dropdown, slider, spin_button, text_input, toggler,
     },
-    Element,
 };
 use hardware::bytes_to_pretty;
-use crate::utils::{labelled_spinner};
-use hardware::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
+use hardware::{COMMON_PARTITION_NAMES, CreatePartitionInfo, PARTITION_NAMES};
 use std::borrow::Cow;
 
 pub fn confirmation<'a>(
@@ -39,16 +39,13 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
     let free = len - size;
     let free_bytes = free as u64;
 
-    let size_pretty = bytes_to_pretty( &create.size, false);
-    let free_pretty = bytes_to_pretty( &free_bytes, false);
+    let size_pretty = bytes_to_pretty(&create.size, false);
+    let free_pretty = bytes_to_pretty(&free_bytes, false);
     let step = hardware::get_step(&create.size);
 
     println!("step: {}", step);
 
     let create_clone = create.clone();
-
-
-
 
     let mut content = iced_widget::column![
         text_input("Volume name", create_clone.name)
@@ -57,14 +54,14 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         slider((0.0..=len), size, |v| CreateMessage::SizeUpdate(v as u64)
             .into()),
         labelled_spinner("Partition Size", size_pretty, size, step, 0., len, |v| {
-                println!("value: {}", v);
-                CreateMessage::SizeUpdate(v as u64).into()}),
+            println!("value: {}", v);
+            CreateMessage::SizeUpdate(v as u64).into()
+        }),
         labelled_spinner("Free Space", free_pretty, free, step, 0., len, move |v| {
             println!("value: {}", v);
 
             CreateMessage::SizeUpdate((len - v) as u64).into()
         }),
-
         toggler(create_clone.erase)
             .label("Erase")
             .on_toggle(|v| CreateMessage::EraseUpdate(v).into()),
@@ -76,16 +73,19 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         checkbox("Password Protected", create.password_protected)
             .on_toggle(|v| CreateMessage::PasswordProectedUpdate(v).into()),
     ];
-  
-    if create.password_protected
-    {
-        content = content.push( text_input::secure_input("", create_clone.password, None, true)
-        .label("Password")
-        .on_input(|v| CreateMessage::PasswordUpdate(v).into()));
 
-        content = content.push(  text_input::secure_input("", create_clone.confirmed_password, None, true)
-        .label("Confirm")
-        .on_input(|v| CreateMessage::ConfirmedPasswordUpdate(v).into()));
+    if create.password_protected {
+        content = content.push(
+            text_input::secure_input("", create_clone.password, None, true)
+                .label("Password")
+                .on_input(|v| CreateMessage::PasswordUpdate(v).into()),
+        );
+
+        content = content.push(
+            text_input::secure_input("", create_clone.confirmed_password, None, true)
+                .label("Confirm")
+                .on_input(|v| CreateMessage::ConfirmedPasswordUpdate(v).into()),
+        );
     }
 
     let mut continue_button = button::destructive("Continue");

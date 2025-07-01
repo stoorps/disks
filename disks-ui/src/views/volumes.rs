@@ -1,4 +1,5 @@
 use cosmic::{
+    Element, Task,
     cosmic_theme::palette::WithAlpha,
     iced::{Alignment, Background, Length, Shadow},
     iced_widget::{self, column, row},
@@ -6,13 +7,12 @@ use cosmic::{
         self, container, icon,
         text::{caption, caption_heading},
     },
-    Element, Task,
 };
 
+use crate::app::{Message, ShowDialog};
 use hardware::bytes_to_pretty;
 use hardware::disks::{DriveModel, PartitionModel};
 use hardware::{CreatePartitionInfo, Drive, Partition};
-use crate::app::{Message, ShowDialog};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VolumesControlMessage {
@@ -20,12 +20,11 @@ pub enum VolumesControlMessage {
     Mount,
     Unmount,
     Delete,
-    CreateMessage(CreateMessage)
+    CreateMessage(CreateMessage),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CreateMessage
-{
+pub enum CreateMessage {
     SizeUpdate(u64),
     NameUpdate(String),
     PasswordUpdate(String),
@@ -35,18 +34,16 @@ pub enum CreateMessage
     PartitionTypeUpdate(usize),
     Continue,
     Cancel,
-    Partition(CreatePartitionInfo)
+    Partition(CreatePartitionInfo),
 }
 
-impl Into<VolumesControlMessage> for CreateMessage
-{
+impl Into<VolumesControlMessage> for CreateMessage {
     fn into(self) -> VolumesControlMessage {
         VolumesControlMessage::CreateMessage(self)
     }
 }
 
-impl Into<Message> for CreateMessage
-{
+impl Into<Message> for CreateMessage {
     fn into(self) -> Message {
         Message::VolumesMessage(VolumesControlMessage::CreateMessage(self))
     }
@@ -77,7 +74,6 @@ pub struct Segment {
     pub width: u16,
     pub partition: Option<PartitionModel>,
 }
-
 
 #[derive(Copy, Clone)]
 pub enum ToggleState {
@@ -113,9 +109,8 @@ impl Segment {
         }
     }
 
-    pub fn get_create_info(&self) -> CreatePartitionInfo
-    {
-        CreatePartitionInfo{
+    pub fn get_create_info(&self) -> CreatePartitionInfo {
+        CreatePartitionInfo {
             max_size: self.size,
             offset: self.offset,
             size: self.size,
@@ -244,158 +239,157 @@ impl VolumesControl {
         message: VolumesControlMessage,
         dialog: &mut Option<ShowDialog>,
     ) -> Task<cosmic::Action<Message>> {
-
-    match message {
-        VolumesControlMessage::SegmentSelected(index) => {
-            if dialog.is_none()
-            {
-                self.selected_segment = index;
-                self.segments.iter_mut().for_each(|s| s.state = false);
-                self.segments.get_mut(index).unwrap().state = true;
+        match message {
+            VolumesControlMessage::SegmentSelected(index) => {
+                if dialog.is_none() {
+                    self.selected_segment = index;
+                    self.segments.iter_mut().for_each(|s| s.state = false);
+                    self.segments.get_mut(index).unwrap().state = true;
+                }
             }
-        }
-        VolumesControlMessage::Mount => {
-            let segment = self.segments.get(self.selected_segment.clone()).cloned();
-            match segment.clone() {
-                Some(s) => match s.partition {
-                    Some(p) => {
-                        return Task::perform(
-                            async move {
-                                match p.mount().await {
-                                    Ok(_) => match DriveModel::get_drives().await {
-                                        Ok(drives) => Ok(drives),
+            VolumesControlMessage::Mount => {
+                let segment = self.segments.get(self.selected_segment.clone()).cloned();
+                match segment.clone() {
+                    Some(s) => match s.partition {
+                        Some(p) => {
+                            return Task::perform(
+                                async move {
+                                    match p.mount().await {
+                                        Ok(_) => match DriveModel::get_drives().await {
+                                            Ok(drives) => Ok(drives),
+                                            Err(e) => Err(e),
+                                        },
                                         Err(e) => Err(e),
-                                    },
-                                    Err(e) => Err(e),
-                                }
-                            },
-                            |result| match result {
-                                Ok(drives) => Message::UpdateNav(drives, None).into(),
-                                Err(e) => {
-                                    println!("{e}");
-                                    Message::None.into()
-                                }
-                            },
-                        );
-                    }
-                    None => return Task::none(),
-                },
-                None => {}
-            }
-            return Task::none();
-        }
-        VolumesControlMessage::Unmount => {
-            let segment = self.segments.get(self.selected_segment.clone()).cloned();
-            match segment.clone() {
-                Some(s) => match s.partition {
-                    Some(p) => {
-                        return Task::perform(
-                            async move {
-                                match p.unmount().await {
-                                    Ok(_) => match DriveModel::get_drives().await {
-                                        Ok(drives) => Ok(drives),
-                                        Err(e) => Err(e),
-                                    },
-                                    Err(e) => Err(e),
-                                }
-                            },
-                            |result| match result {
-                                Ok(drives) => Message::UpdateNav(drives, None).into(),
-                                Err(e) => {
-                                    println!("{e}");
-                                    Message::None.into()
-                                }
-                            },
-                        );
-                    }
-                    None => return Task::none(),
-                },
-                None => {}
-            }
-            return Task::none();
-        }
-        VolumesControlMessage::Delete => {
-            let segment = self.segments.get(self.selected_segment.clone()).cloned();
-            let task = match segment.clone() {
-                Some(s) => match s.partition {
-                    Some(p) => Task::perform(
-                        async move {
-                            match p.delete().await {
-                                Ok(_) => match DriveModel::get_drives().await {
-                                    Ok(drives) => Ok(drives),
-                                    Err(e) => Err(e),
+                                    }
                                 },
-                                Err(e) => Err(e),
-                            }
-                        },
-                        |result| match result {
-                            Ok(drives) => Message::UpdateNav(drives, None).into(),
-                            Err(e) => {
-                                println!("{e}");
-                                Message::None.into()
-                            }
-                        },
-                    ),
+                                |result| match result {
+                                    Ok(drives) => Message::UpdateNav(drives, None).into(),
+                                    Err(e) => {
+                                        println!("{e}");
+                                        Message::None.into()
+                                    }
+                                },
+                            );
+                        }
+                        None => return Task::none(),
+                    },
+                    None => {}
+                }
+                return Task::none();
+            }
+            VolumesControlMessage::Unmount => {
+                let segment = self.segments.get(self.selected_segment.clone()).cloned();
+                match segment.clone() {
+                    Some(s) => match s.partition {
+                        Some(p) => {
+                            return Task::perform(
+                                async move {
+                                    match p.unmount().await {
+                                        Ok(_) => match DriveModel::get_drives().await {
+                                            Ok(drives) => Ok(drives),
+                                            Err(e) => Err(e),
+                                        },
+                                        Err(e) => Err(e),
+                                    }
+                                },
+                                |result| match result {
+                                    Ok(drives) => Message::UpdateNav(drives, None).into(),
+                                    Err(e) => {
+                                        println!("{e}");
+                                        Message::None.into()
+                                    }
+                                },
+                            );
+                        }
+                        None => return Task::none(),
+                    },
+                    None => {}
+                }
+                return Task::none();
+            }
+            VolumesControlMessage::Delete => {
+                let segment = self.segments.get(self.selected_segment.clone()).cloned();
+                let task = match segment.clone() {
+                    Some(s) => match s.partition {
+                        Some(p) => Task::perform(
+                            async move {
+                                match p.delete().await {
+                                    Ok(_) => match DriveModel::get_drives().await {
+                                        Ok(drives) => Ok(drives),
+                                        Err(e) => Err(e),
+                                    },
+                                    Err(e) => Err(e),
+                                }
+                            },
+                            |result| match result {
+                                Ok(drives) => Message::UpdateNav(drives, None).into(),
+                                Err(e) => {
+                                    println!("{e}");
+                                    Message::None.into()
+                                }
+                            },
+                        ),
+                        None => Task::none(),
+                    },
                     None => Task::none(),
-                },
-                None => Task::none(),
-            };
+                };
 
-            return Task::done(Message::CloseDialog.into()).chain(task);
-        }
-        VolumesControlMessage::CreateMessage(create_message) => {
-            let d = match dialog.as_mut()
-            {
-                Some(d) => d,
-                None => panic!("invalid state") //TODO: Better handling,
-            };
+                return Task::done(Message::CloseDialog.into()).chain(task);
+            }
+            VolumesControlMessage::CreateMessage(create_message) => {
+                let d = match dialog.as_mut() {
+                    Some(d) => d,
+                    None => panic!("invalid state"), //TODO: Better handling,
+                };
 
-            match d{
-                ShowDialog::DeletePartition(_) => {},
+                match d {
+                    ShowDialog::DeletePartition(_) => {}
 
-                ShowDialog::AddPartition(create) =>
-                {
-                    match create_message {
+                    ShowDialog::AddPartition(create) => match create_message {
                         CreateMessage::SizeUpdate(size) => create.size = size,
-                        CreateMessage::NameUpdate(name) =>{
+                        CreateMessage::NameUpdate(name) => {
                             create.name = name;
-                        },
+                        }
                         CreateMessage::PasswordUpdate(password) => create.password = password,
-                        CreateMessage::ConfirmedPasswordUpdate(confirmed_password) => create.confirmed_password = confirmed_password,
-                        CreateMessage::PasswordProectedUpdate(protect) => create.password_protected = protect,
+                        CreateMessage::ConfirmedPasswordUpdate(confirmed_password) => {
+                            create.confirmed_password = confirmed_password
+                        }
+                        CreateMessage::PasswordProectedUpdate(protect) => {
+                            create.password_protected = protect
+                        }
                         CreateMessage::EraseUpdate(erase) => create.erase = erase,
-                        CreateMessage::PartitionTypeUpdate(p_type) => create.selected_partitition_type = p_type,
+                        CreateMessage::PartitionTypeUpdate(p_type) => {
+                            create.selected_partitition_type = p_type
+                        }
                         CreateMessage::Continue => todo!(),
                         CreateMessage::Cancel => todo!(),
-                        CreateMessage::Partition(create_partition_info) =>
-                        {
+                        CreateMessage::Partition(create_partition_info) => {
                             let model = self.model.clone();
                             let task = Task::perform(
-                                        async move {
-                                            match model.create_partition(create_partition_info).await {
-                                                Ok(_) => match DriveModel::get_drives().await {
-                                                    Ok(drives) => Ok(drives),
-                                                    Err(e) => Err(e),
-                                                },
-                                                Err(e) => Err(e),
-                                            }
+                                async move {
+                                    match model.create_partition(create_partition_info).await {
+                                        Ok(_) => match DriveModel::get_drives().await {
+                                            Ok(drives) => Ok(drives),
+                                            Err(e) => Err(e),
                                         },
-                                        |result| match result {
-                                            Ok(drives) => Message::UpdateNav(drives, None).into(),
-                                            Err(e) => {
-                                                println!("{e}");
-                                                Message::None.into()
-                                            }
-                                        },
+                                        Err(e) => Err(e),
+                                    }
+                                },
+                                |result| match result {
+                                    Ok(drives) => Message::UpdateNav(drives, None).into(),
+                                    Err(e) => {
+                                        println!("{e}");
+                                        Message::None.into()
+                                    }
+                                },
                             );
 
                             return Task::done(Message::CloseDialog.into()).chain(task);
                         }
-                    }
+                    },
                 }
             }
         }
-    }
         Task::none()
     }
 

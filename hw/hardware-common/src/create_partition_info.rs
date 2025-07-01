@@ -1,9 +1,5 @@
-
-
-
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct CreatePartitionInfo
-{
+pub struct CreatePartitionInfo {
     pub name: String,
     pub size: u64,
     pub max_size: u64,
@@ -15,5 +11,4 @@ pub struct CreatePartitionInfo
     pub password: String,
     pub confirmed_password: String,
     pub can_continue: bool,
-
 }

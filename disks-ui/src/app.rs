@@ -2,22 +2,22 @@
 
 use crate::config::Config;
 use crate::fl;
+use crate::utils::{labelled_info, link_info};
 use crate::views::about::about;
 use crate::views::dialogs;
-use crate::views::menu::{ menu_view, MenuAction};
+use crate::views::menu::{MenuAction, menu_view};
 use crate::views::volumes::{VolumesControl, VolumesControlMessage};
-use cosmic::app::{context_drawer, Core, Task};
+use cosmic::app::{Core, Task, context_drawer};
 use cosmic::cosmic_config::{self, CosmicConfigEntry};
 use cosmic::iced::alignment::{Horizontal, Vertical};
 use cosmic::iced::{Length, Subscription};
 use cosmic::widget::text::heading;
-use cosmic::widget::{self, container, icon, menu, nav_bar, Space};
-use cosmic::{iced_widget, Application, ApplicationExt, Apply, Element};
-use hardware::bytes_to_pretty;
-use crate::utils::{labelled_info, link_info};
-use hardware::{Drive, Partition, CreatePartitionInfo};
-use hardware::disks::{DiskManager, DriveModel};
+use cosmic::widget::{self, Space, container, icon, menu, nav_bar};
+use cosmic::{Application, ApplicationExt, Apply, Element, iced_widget};
 use futures_util::{SinkExt, StreamExt};
+use hardware::bytes_to_pretty;
+use hardware::disks::{DiskManager, DriveModel};
+use hardware::{CreatePartitionInfo, Drive, Partition};
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -177,9 +177,7 @@ impl Application for AppModel {
         let mut nav = widget::nav_bar(nav_model, |id| {
             cosmic::Action::Cosmic(cosmic::app::Action::NavBar(id))
         })
-        .on_context(|id| {
-            cosmic::Action::Cosmic(cosmic::app::Action::NavBarContext(id))
-        })
+        .on_context(|id| cosmic::Action::Cosmic(cosmic::app::Action::NavBarContext(id)))
         // .context_menu(self.nav_context_menu(self.nav_bar()))
         .into_container()
         // XXX both must be shrink to avoid flex layout from ignoring it
@@ -383,155 +381,154 @@ impl Application for AppModel {
     fn update(&mut self, message: Self::Message) -> Task<Self::Message> {
         match message {
             Message::OpenRepositoryUrl => {
-                        _ = open::that_detached(REPOSITORY);
-                    }
+                _ = open::that_detached(REPOSITORY);
+            }
             Message::OpenPath(path) => {
-                        _ = open::that_detached(path);
-                    }
+                _ = open::that_detached(path);
+            }
             Message::ToggleContextPage(context_page) => {
-                        if self.context_page == context_page {
-                            // Close the context drawer if the toggled context page is the same.
-                            self.core.window.show_context = !self.core.window.show_context;
-                        } else {
-                            // Open the context drawer to display the requested context page.
-                            self.context_page = context_page;
-                            self.core.window.show_context = true;
-                        }
-                    }
+                if self.context_page == context_page {
+                    // Close the context drawer if the toggled context page is the same.
+                    self.core.window.show_context = !self.core.window.show_context;
+                } else {
+                    // Open the context drawer to display the requested context page.
+                    self.context_page = context_page;
+                    self.core.window.show_context = true;
+                }
+            }
             Message::UpdateConfig(config) => {
-                        self.config = config;
-                    }
+                self.config = config;
+            }
             Message::LaunchUrl(url) => match open::that_detached(&url) {
-                        Ok(()) => {}
-                        Err(err) => {
-                            eprintln!("failed to open {url:?}: {err}");
+                Ok(()) => {}
+                Err(err) => {
+                    eprintln!("failed to open {url:?}: {err}");
+                }
+            },
+            Message::VolumesMessage(message) => {
+                let volumes_control = self.nav.active_data_mut::<VolumesControl>().unwrap(); //TODO: HANDLE UNWRAP.
+                return volumes_control.update(message, &mut self.dialog);
+            }
+            Message::DriveRemoved(_drive_model) => {
+                //TODO: use DeviceManager.apply_change()
+
+                return Task::perform(
+                    async {
+                        match DriveModel::get_drives().await {
+                            Ok(drives) => Some(drives),
+                            Err(e) => {
+                                println!("Error: {}", e);
+                                return None;
+                            }
                         }
                     },
-            Message::VolumesMessage(message) => {
-                        let volumes_control = self.nav.active_data_mut::<VolumesControl>().unwrap(); //TODO: HANDLE UNWRAP.
-                        return volumes_control.update(message, &mut self.dialog);
-                    }
-            Message::DriveRemoved(_drive_model) => {
-                        //TODO: use DeviceManager.apply_change()
-
-                        return Task::perform(
-                            async {
-                                match DriveModel::get_drives().await {
-                                    Ok(drives) => Some(drives),
-                                    Err(e) => {
-                                        println!("Error: {}", e);
-                                        return None;
-                                    }
-                                }
-                            },
-                            move |drives| match drives {
-                                None => return Message::None.into(),
-                                Some(drives) => return Message::UpdateNav(drives, None).into(),
-                            },
-                        );
-                    }
+                    move |drives| match drives {
+                        None => return Message::None.into(),
+                        Some(drives) => return Message::UpdateNav(drives, None).into(),
+                    },
+                );
+            }
             Message::DriveAdded(_drive_model) => {
-
-                        return Task::perform(
-                            async {
-                                match DriveModel::get_drives().await {
-                                    Ok(drives) => Some(drives),
-                                    Err(e) => {
-                                        println!("Error: {}", e);
-                                        return None;
-                                    }
-                                }
-                            },
-                            move |drives| match drives {
-                                None => return Message::None.into(),
-                                Some(drives) => return Message::UpdateNav(drives, None).into(),
-                            },
-                        );
-                    }
+                return Task::perform(
+                    async {
+                        match DriveModel::get_drives().await {
+                            Ok(drives) => Some(drives),
+                            Err(e) => {
+                                println!("Error: {}", e);
+                                return None;
+                            }
+                        }
+                    },
+                    move |drives| match drives {
+                        None => return Message::None.into(),
+                        Some(drives) => return Message::UpdateNav(drives, None).into(),
+                    },
+                );
+            }
             Message::None => {}
             Message::UpdateNav(drive_models, selected) => {
-                        let selected = match selected {
-                            Some(s) => Some(s),
-                            None => match self.nav.active_data::<DriveModel>() {
-                                Some(d) => Some(d.block_path.clone()),
-                                None => None,
-                            },
-                        };
+                let selected = match selected {
+                    Some(s) => Some(s),
+                    None => match self.nav.active_data::<DriveModel>() {
+                        Some(d) => Some(d.block_path.clone()),
+                        None => None,
+                    },
+                };
 
-                        self.nav.clear();
+                self.nav.clear();
 
-                        let selected = match selected {
-                            Some(s) => Some(s),
-                            None => {
-                                if selected.is_none() && drive_models.len() > 0 {
-                                    Some(drive_models.first().unwrap().block_path.clone())
-                                } else {
-                                    None
-                                }
-                            }
-                        };
-
-                        for drive in drive_models {
-                            let icon = match drive.removable {
-                                true => "drive-removable-media-symbolic",
-                                false => "disks-symbolic",
-                            };
-
-                            match selected {
-                                Some(ref s) => {
-                                    if drive.block_path == s.clone() {
-                                        self.nav
-                                            .insert()
-                                            .text(drive.pretty_name())
-                                            .data::<VolumesControl>(VolumesControl::new(drive.clone()))
-                                            .data::<DriveModel>(drive)
-                                            .icon(icon::from_name(icon))
-                                            .activate();
-                                    } else {
-                                        self.nav
-                                            .insert()
-                                            .text(drive.pretty_name())
-                                            .data::<VolumesControl>(VolumesControl::new(drive.clone()))
-                                            .data::<DriveModel>(drive)
-                                            .icon(icon::from_name(icon));
-                                    }
-                                }
-                                None => {
-                                    self.nav
-                                        .insert()
-                                        .text(drive.pretty_name())
-                                        .data::<VolumesControl>(VolumesControl::new(drive.clone()))
-                                        .data::<DriveModel>(drive)
-                                        .icon(icon::from_name(icon));
-                                }
-                            }
+                let selected = match selected {
+                    Some(s) => Some(s),
+                    None => {
+                        if selected.is_none() && drive_models.len() > 0 {
+                            Some(drive_models.first().unwrap().block_path.clone())
+                        } else {
+                            None
                         }
                     }
+                };
+
+                for drive in drive_models {
+                    let icon = match drive.removable {
+                        true => "drive-removable-media-symbolic",
+                        false => "disks-symbolic",
+                    };
+
+                    match selected {
+                        Some(ref s) => {
+                            if drive.block_path == s.clone() {
+                                self.nav
+                                    .insert()
+                                    .text(drive.pretty_name())
+                                    .data::<VolumesControl>(VolumesControl::new(drive.clone()))
+                                    .data::<DriveModel>(drive)
+                                    .icon(icon::from_name(icon))
+                                    .activate();
+                            } else {
+                                self.nav
+                                    .insert()
+                                    .text(drive.pretty_name())
+                                    .data::<VolumesControl>(VolumesControl::new(drive.clone()))
+                                    .data::<DriveModel>(drive)
+                                    .icon(icon::from_name(icon));
+                            }
+                        }
+                        None => {
+                            self.nav
+                                .insert()
+                                .text(drive.pretty_name())
+                                .data::<VolumesControl>(VolumesControl::new(drive.clone()))
+                                .data::<DriveModel>(drive)
+                                .icon(icon::from_name(icon));
+                        }
+                    }
+                }
+            }
             Message::Dialog(show_dialog) => self.dialog = Some(show_dialog),
             Message::CloseDialog => {
-                        self.dialog = None;
-                    }
+                self.dialog = None;
+            }
             Message::Eject => {
-                        if let Some(drive) = self.nav.active_data::<DriveModel>().cloned() {
-                            return Task::perform(
-                                async move {
-                                    let _ = drive.eject().await; //TODO handle error
-                                    match DriveModel::get_drives().await {
-                                        Ok(drives) => Some(drives),
-                                        Err(e) => {
-                                            println!("Error: {}", e);
-                                            return None;
-                                        }
-                                    }
-                                },
-                                move |drives| match drives {
-                                    None => return Message::None.into(),
-                                    Some(drives) => return Message::UpdateNav(drives, None).into(),
-                                },
-                            );
-                        } else {
-                        }
-                    }
+                if let Some(drive) = self.nav.active_data::<DriveModel>().cloned() {
+                    return Task::perform(
+                        async move {
+                            let _ = drive.eject().await; //TODO handle error
+                            match DriveModel::get_drives().await {
+                                Ok(drives) => Some(drives),
+                                Err(e) => {
+                                    println!("Error: {}", e);
+                                    return None;
+                                }
+                            }
+                        },
+                        move |drives| match drives {
+                            None => return Message::None.into(),
+                            Some(drives) => return Message::UpdateNav(drives, None).into(),
+                        },
+                    );
+                } else {
+                }
+            }
             Message::PowerOff => todo!(),
             Message::Format => todo!(),
             Message::Benchmark => todo!(),
@@ -543,9 +540,11 @@ impl Application for AppModel {
             Message::AttachDisk => todo!(),
             Message::CreateDiskFrom => todo!(),
             Message::RestoreImageTo => todo!(),
-            Message::Surface(action) =>  return cosmic::task::message(cosmic::Action::Cosmic(
-                cosmic::app::Action::Surface(action),
-            )),
+            Message::Surface(action) => {
+                return cosmic::task::message(cosmic::Action::Cosmic(
+                    cosmic::app::Action::Surface(action),
+                ));
+            }
         }
         Task::none()
     }

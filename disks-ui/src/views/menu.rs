@@ -1,15 +1,18 @@
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
-use cosmic::widget::Id;
-use cosmic::Core;
-use cosmic::{widget::menu, Element};
-use crate::fl;
 use crate::app::{ContextPage, Message};
+use crate::fl;
+use cosmic::Core;
+use cosmic::widget::Id;
+use cosmic::{Element, widget::menu};
 
-static MENU_ID: LazyLock<Id> = LazyLock::new(||Id::new("menu_id"));
+static MENU_ID: LazyLock<Id> = LazyLock::new(|| Id::new("menu_id"));
 
-pub fn menu_view(core: &Core, key_binds: &HashMap<menu::KeyBind, MenuAction>) -> Vec<Element<'static, Message>> {
+pub fn menu_view(
+    core: &Core,
+    key_binds: &HashMap<menu::KeyBind, MenuAction>,
+) -> Vec<Element<'static, Message>> {
     vec![cosmic::widget::responsive_menu_bar().into_element(
         core, // Replace with `self.core()` if applicable
         key_binds,
@@ -46,13 +49,12 @@ pub fn menu_view(core: &Core, key_binds: &HashMap<menu::KeyBind, MenuAction>) ->
     )]
 }
 
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MenuAction {
     About,
     Eject,
     PowerOff,
-    Format, 
+    Format,
     Benchmark,
     SmartData,
     DriveSettings,
@@ -77,12 +79,11 @@ impl menu::action::MenuAction for MenuAction {
             MenuAction::SmartData => Message::SmartData,
             MenuAction::DriveSettings => Message::DriveSettings,
             MenuAction::StandbyNow => Message::StandbyNow,
-            MenuAction::Wakeup =>Message::Wakeup,
+            MenuAction::Wakeup => Message::Wakeup,
             MenuAction::NewDiskImage => Message::NewDiskImage,
-            MenuAction::AttachDisk =>Message::AttachDisk,
-            MenuAction::CreateDiskFrom =>Message::CreateDiskFrom,
-            MenuAction::RestoreImageTo =>Message::RestoreImageTo,
-            
+            MenuAction::AttachDisk => Message::AttachDisk,
+            MenuAction::CreateDiskFrom => Message::CreateDiskFrom,
+            MenuAction::RestoreImageTo => Message::RestoreImageTo,
         }
     }
 }

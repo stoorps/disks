@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-use std::time::Duration;
 use anyhow::Result;
 use futures::stream::Stream;
 use futures::task::{Context, Poll};
+use std::collections::HashMap;
+use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
 use tracing::error;
 use zbus::{
-    zvariant::{self, Value},
     Connection,
+    zvariant::{self, Value},
 };
 use zbus_macros::proxy;
 
@@ -44,9 +44,7 @@ impl DiskManager {
     pub async fn new() -> Result<Self> {
         let connection = Connection::system().await?;
         let proxy = UDisks2ManagerProxy::new(&connection).await?;
-        Ok(Self {
-            proxy,
-        })
+        Ok(Self { proxy })
     }
 
     pub fn device_event_stream(&self, interval: Duration) -> DeviceEventStream {
@@ -56,10 +54,7 @@ impl DiskManager {
         tokio::spawn(async move {
             let mut previous_devices: Option<Vec<String>> = None;
             loop {
-                let current_devices = match proxy
-                    .get_block_devices(HashMap::new())
-                    .await
-                {
+                let current_devices = match proxy.get_block_devices(HashMap::new()).await {
                     Ok(paths) => paths.into_iter().map(|p| p.to_string()).collect(),
                     Err(e) => {
                         error!("Failed to get block devices: {}", e);
@@ -97,7 +92,6 @@ impl DiskManager {
         DeviceEventStream { receiver }
     }
 
-
     pub async fn apply_change(
         drives: &mut Vec<DriveModel>,
         added: Option<String>,
@@ -113,9 +107,9 @@ impl DiskManager {
                     drives.remove(index);
                     return Ok(()); // Early return after removing a drive
                 }
-    
+
                 // If no direct match, THEN check partitions (using a reference!)
-                for drive in drives.iter_mut() { 
+                for drive in drives.iter_mut() {
                     if let Some(index) = drive
                         .partitions
                         .iter()
@@ -127,16 +121,20 @@ impl DiskManager {
             }
             None => {}
         }
-    
+
         match added {
             Some(_) => {
                 let mut new_drives = DriveModel::get_drives().await?;
-                drives.retain(|drive| !new_drives.iter().any(|new_drive| new_drive.path == drive.path));
+                drives.retain(|drive| {
+                    !new_drives
+                        .iter()
+                        .any(|new_drive| new_drive.path == drive.path)
+                });
                 drives.append(&mut new_drives);
             }
             None => {}
         }
-    
+
         Ok(())
     }
 }
@@ -144,7 +142,10 @@ impl DiskManager {
 impl Stream for DeviceEventStream {
     type Item = DeviceEvent;
 
-    fn poll_next(mut self: std::pin::Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+    fn poll_next(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
         self.receiver.poll_recv(cx)
     }
 }

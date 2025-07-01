@@ -61,16 +61,12 @@ impl PartitionTypeInfo {
         }
     }
 
-    pub fn find_by_id(type_id: String) -> Option<PartitionTypeInfo>
-    {
-        match PARTITION_TYPES.iter().find(|p| p.ty == type_id)
-        {
+    pub fn find_by_id(type_id: String) -> Option<PartitionTypeInfo> {
+        match PARTITION_TYPES.iter().find(|p| p.ty == type_id) {
             Some(t) => Some(t.clone()),
             None => None,
         }
     }
-
-
 }
 
 pub static PARTITION_NAMES: LazyLock<Vec<String>> = LazyLock::new(|| {
@@ -86,8 +82,6 @@ pub static COMMON_PARTITION_NAMES: LazyLock<Vec<String>> = LazyLock::new(|| {
         .map(|p| format!("{} - {}", p.name, p.ty))
         .collect()
 });
-
-
 
 pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
     // System/Boot partitions
@@ -105,7 +99,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "BIOS Boot",
         PartitionTypeInfoFlags::System,
     ),
-    
     // Common Linux partitions
     PartitionTypeInfo::new(
         "gpt",
@@ -135,7 +128,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "Linux LVM",
         PartitionTypeInfoFlags::Raid,
     ),
-    
     // Microsoft partitions
     PartitionTypeInfo::new(
         "gpt",
@@ -144,7 +136,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "Basic Data",
         PartitionTypeInfoFlags::None,
     ),
-    
     // DOS/MBR partition types
     PartitionTypeInfo::new(
         "dos",
@@ -195,7 +186,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "FAT32 (LBA)",
         PartitionTypeInfoFlags::None,
     ),
-    
     // Apple partitions
     PartitionTypeInfo::new(
         "gpt",
@@ -211,7 +201,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "Apple APFS",
         PartitionTypeInfoFlags::None,
     ),
-    
     // Recovery/Diagnostic partitions
     PartitionTypeInfo::new(
         "gpt",
@@ -220,7 +209,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "Extended Boot",
         PartitionTypeInfoFlags::None,
     ),
-    
     // ZFS
     PartitionTypeInfo::new(
         "gpt",
@@ -229,7 +217,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "ZFS",
         PartitionTypeInfoFlags::None,
     ),
-    
     // FreeBSD
     PartitionTypeInfo::new(
         "gpt",
@@ -238,7 +225,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         "FreeBSD Data",
         PartitionTypeInfoFlags::None,
     ),
-    
     // ChromeOS
     PartitionTypeInfo::new(
         "gpt",
@@ -248,7 +234,6 @@ pub static COMMON_PARTITION_TYPES: [PartitionTypeInfo; 20] = [
         PartitionTypeInfoFlags::None,
     ),
 ];
-
 
 /// Known [PartitionType]s.
 /// see http://en.wikipedia.org/wiki/GUID_Partition_Table
