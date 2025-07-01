@@ -8,8 +8,9 @@ use cosmic::{
     },
     Element,
 };
-use crate::utils::{bytes_to_pretty, labelled_spinner};
-use disks_dbus::disks::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
+use hardware::bytes_to_pretty;
+use crate::utils::{labelled_spinner};
+use hardware::{CreatePartitionInfo, COMMON_PARTITION_NAMES, PARTITION_NAMES};
 use std::borrow::Cow;
 
 pub fn confirmation<'a>(
@@ -36,11 +37,12 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
 
     let size = create.size as f64;
     let free = len - size;
+    let free_bytes = free as u64;
 
     let size_pretty = bytes_to_pretty( &create.size, false);
-    let free_pretty = bytes_to_pretty( &create.size, false);
+    let free_pretty = bytes_to_pretty( &free_bytes, false);
+    let step = hardware::get_step(&create.size);
 
-    let step = utils::get_step(&create.size);
     println!("step: {}", step);
 
     let create_clone = create.clone();
@@ -62,21 +64,19 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
 
             CreateMessage::SizeUpdate((len - v) as u64).into()
         }),
-    
+
         toggler(create_clone.erase)
             .label("Erase")
             .on_toggle(|v| CreateMessage::EraseUpdate(v).into()),
         dropdown(
-            &COMMON_PARTITION_NAMES,
+            &*COMMON_PARTITION_NAMES,
             Some(create_clone.selected_partitition_type),
             |v| CreateMessage::PartitionTypeUpdate(v).into()
         ),
         checkbox("Password Protected", create.password_protected)
             .on_toggle(|v| CreateMessage::PasswordProectedUpdate(v).into()),
-       
     ];
-
-    
+  
     if create.password_protected
     {
         content = content.push( text_input::secure_input("", create_clone.password, None, true)
@@ -87,8 +87,6 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
         .label("Confirm")
         .on_input(|v| CreateMessage::ConfirmedPasswordUpdate(v).into()));
     }
-  
-
 
     let mut continue_button = button::destructive("Continue");
 

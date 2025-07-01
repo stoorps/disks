@@ -9,7 +9,7 @@ A Disk utility application for the Cosmic Desktop.
 ### Current plans
 
 #### Decoupling from DBus
-At the moment, Disks is tightly coupled to DBus in ways that I don't think make sense. Also, the hardware interop code is a bit of a mess. 
+At the moment, Disks is tightly coupled to DBus in ways that I don't think make sense. Also, the hardware interop code is a bit of a mess.
 I plan to use [disks-rs](https://github.com/AerynOS/disks-rs) for as much functionality as possible, which should enable cleaner and more direct access to disks/partitions.
 There will be some functionality that is not currently supported by `disks-rs`, and so Dbus will fill in where functionality is currently lacking.
 
@@ -24,5 +24,5 @@ The UI of disks is essentially a clone of Gnome Disks at the moment. There are p
 #### disks-ui
 The application.
 
-#### disks-dbus
+#### hw/
 This project is an abstraction layer for dbus interfaces. The idea here is to provide models that can easily be swapped out at a later date, as better suited rust crates become available for achieving the same functionality.

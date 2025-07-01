@@ -7,7 +7,9 @@ use zbus::{
     zvariant::OwnedObjectPath, Connection
 };
 
-use super::{get_usage_data, manager::UDisks2ManagerProxy, PartitionModel, COMMON_PARTITION_TYPES};
+use hardware_common::{get_usage_data, CreatePartitionInfo, Drive, COMMON_PARTITION_TYPES};
+
+use super::{manager::UDisks2ManagerProxy, PartitionModel};
 
 #[derive(Debug, Clone)]
 pub struct DriveModel {
@@ -34,22 +36,7 @@ pub struct DriveModel {
 }
 
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct CreatePartitionInfo
-{
-    pub name: String,
-    pub size: u64,
-    pub max_size: u64,
-    pub offset: u64,
-    pub erase: bool,
-    pub selected_type: String, 
-    pub selected_partitition_type: usize,
-    pub password_protected: bool,
-    pub password: String,
-    pub confirmed_password: String,
-    pub can_continue: bool,
 
-}
 
 #[derive(Debug, Clone)]
 struct DriveBlockPair {
@@ -57,12 +44,10 @@ struct DriveBlockPair {
     drive_path: OwnedObjectPath,
 }
 
-impl DriveModel {
-    pub fn pretty_name(&self) -> String {
-        self.name.split("/").last().unwrap().replace("_", " ") //TODO: Handle unwrap
-    }
+impl DriveModel
 
-    pub(crate) async fn from_proxy(
+{
+    pub async fn from_proxy(
         path: &str,
         block_path: &str,
         drive_proxy: &DriveProxy<'_>,
@@ -89,32 +74,6 @@ impl DriveModel {
             partition_table_type: None,
             connection: Connection::system().await?
         })
-    }
-
-    pub async fn eject(&self) -> Result<()>
-    {
-        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
-        proxy.eject(HashMap::new()).await?;
-        Ok(())
-    }
-
-    pub async fn power_off(&self) -> Result<()>
-    {
-        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
-        proxy.power_off(HashMap::new()).await?;
-        Ok(())
-    }
-
-
-    pub async fn create_partition(&self, info: CreatePartitionInfo) -> Result<()>
-    {
-        let partition_table_proxy = PartitionTableProxy::builder(&self.connection).path(self.block_path.clone())?.build().await?;
-
-        let partition_type = &COMMON_PARTITION_TYPES[info.selected_partitition_type].ty;
-
-        partition_table_proxy.create_partition_and_format(info.offset, info.size, partition_type, &info.name, HashMap::new(), partition_type, HashMap::new()).await?;
-
-        Ok(())
     }
 
     async fn get_drive_paths(connection: &Connection) -> Result<Vec<DriveBlockPair>> {
@@ -228,13 +187,51 @@ impl DriveModel {
         let mut drives: Vec<DriveModel> = drives.into_values().collect();
         drives.sort_by(|d1, d2| {
             d1.removable.cmp(&d2.removable).then_with(|| {
-                d2.block_path.cmp(&d1.block_path) //TODO: understand this. d1 SHOULD come first in this compare... 
+                d2.block_path.cmp(&d1.block_path) //TODO: understand this. d1 SHOULD come first in this compare...
             })
         });
-        
+
 
         Ok(drives)
     }
+
 }
+
+
+impl Drive for DriveModel {
+     fn pretty_name(&self) -> String {
+        self.name.split("/").last().unwrap().replace("_", " ") //TODO: Handle unwrap
+    }
+
+
+
+     async fn eject(&self) -> Result<()>
+    {
+        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
+        proxy.eject(HashMap::new()).await?;
+        Ok(())
+    }
+
+     async fn power_off(&self) -> Result<()>
+    {
+        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
+        proxy.power_off(HashMap::new()).await?;
+        Ok(())
+    }
+
+
+     async fn create_partition(&self, info: CreatePartitionInfo) -> Result<()>
+    {
+        let partition_table_proxy = PartitionTableProxy::builder(&self.connection).path(self.block_path.clone())?.build().await?;
+
+        let partition_type = &COMMON_PARTITION_TYPES[info.selected_partitition_type].ty;
+
+        partition_table_proxy.create_partition_and_format(info.offset, info.size, partition_type, &info.name, HashMap::new(), partition_type, HashMap::new()).await?;
+
+        Ok(())
+    }
+
+
+    }
 
 

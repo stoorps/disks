@@ -1,28 +1,32 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
+use cosmic::widget::Id;
+use cosmic::Core;
 use cosmic::{widget::menu, Element};
 use crate::fl;
-
 use crate::app::{ContextPage, Message};
 
-pub fn menu_view(key_binds: &HashMap<menu::KeyBind, MenuAction>,) -> Vec<Element<Message>> {
-    let menu_bar = menu::bar(vec![
-        menu::Tree::with_children(
-            menu::root("Image"),
-            menu::items(
-                key_binds,
+static MENU_ID: LazyLock<Id> = LazyLock::new(||Id::new("menu_id"));
+
+pub fn menu_view(core: &Core, key_binds: &HashMap<menu::KeyBind, MenuAction>) -> Vec<Element<'static, Message>> {
+    vec![cosmic::widget::responsive_menu_bar().into_element(
+        core, // Replace with `self.core()` if applicable
+        key_binds,
+        MENU_ID.clone(),
+        Message::Surface,
+        vec![
+            (
+                "Image".into(),
                 vec![
-                    menu::Item::Button("New Disk Image", None, MenuAction::About),
+                    menu::Item::Button("New Disk Image", None, MenuAction::NewDiskImage),
                     menu::Item::Button("Attach Disk Image", None, MenuAction::AttachDisk),
                     menu::Item::Button("Create Disk From Drive", None, MenuAction::CreateDiskFrom),
                     menu::Item::Button("Restore Image to Drive", None, MenuAction::RestoreImageTo),
                 ],
             ),
-        ),
-        menu::Tree::with_children(
-            menu::root("Disk"),
-            menu::items(
-                key_binds,
+            (
+                "Disk".into(),
                 vec![
                     menu::Item::Button("Eject", None, MenuAction::Eject),
                     menu::Item::Button("Power Off", None, MenuAction::PowerOff),
@@ -34,17 +38,12 @@ pub fn menu_view(key_binds: &HashMap<menu::KeyBind, MenuAction>,) -> Vec<Element
                     menu::Item::Button("Wake-up From Standby", None, MenuAction::Wakeup),
                 ],
             ),
-        ),
-        menu::Tree::with_children(
-            menu::root(fl!("view")),
-            menu::items(
-                &key_binds,
-                vec![menu::Item::Button(fl!("about"), None, MenuAction::About)],
+            (
+                "View".into(),
+                vec![menu::Item::Button("about", None, MenuAction::About)],
             ),
-        ),
-    ]);
-
-    vec![menu_bar.into()] //, horizontal_space().into(), end_bar.into()]
+        ],
+    )]
 }
 
 

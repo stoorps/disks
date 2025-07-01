@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "disks-dbus",
-    "disks-ui",
+    "hw/hardware-dbus",
+    "disks-ui", "hw/hardware-common", "hw/hardware", "hw/hardware-disks-rs",
 ]
-default-members = ["disks-ui"]
+default-members = ["disks-ui", "hw/hardware-disks-rs"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -28,12 +28,33 @@ futures = "0.3.31"
 enumflags2 = "0.7.12"
 
 
-disks-dbus = { path = "disks-dbus" }
+# workspace dependencies
+hardware = { path = "hw/hardware" }
+hardware-dbus = { path = "hw/hardware-dbus" }
+hardware-common = { path = "hw/hardware-common" }
+hardware-disks-rs = { path = "hw/hardware-disks-rs" }
 
 # build dependencies
 vergen = { version = "9.0",  features = ["build", "cargo", "rustc", "si"]  }
 vergen-git2 = {version = "1.0.7" }
 vergen-gitcl = {version  = "1.0.8" }
+
+
+[workspace.dependencies.disks-rs]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "disks"
+
+[workspace.dependencies.disks-rs-superblock]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "superblock"
+
+[workspace.dependencies.disks-rs-partitioning]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "partitioning"
+
+[workspace.dependencies.disks-rs-types]
+git = "https://github.com/AerynOS/disks-rs.git"
+package = "types"
 
 
 [workspace.dependencies.i18n-embed]
