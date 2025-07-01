@@ -1,7 +1,7 @@
 # 🚧 Disks 🚧
 
 > [!CAUTION]
-> This project is currently in an early prototyping phase. *DO NOT* use this for perfoming operations on disks yet!
+> This project is currently in an early prototyping phase. *DO NOT* use this for performing operations on disks yet!
 ---
 A Disk utility application for the Cosmic Desktop.
 
