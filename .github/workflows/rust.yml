@@ -11,6 +11,7 @@ env:
 
 jobs:
   build:
+    name: Build & Test
 
     runs-on: ubuntu-latest
 
@@ -18,5 +19,6 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build
       run: cargo build --verbose
+    # No tests for now....
     # - name: Run tests
     #   run: cargo test --verbose
