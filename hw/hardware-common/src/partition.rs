@@ -14,7 +14,7 @@ pub trait Partition {
     fn delete(&self) -> impl std::future::Future<Output = Result<()>> + Send;
 
 
-    fn format(&self, name: String, erase: bool, partion_type: String) -> impl std::future::Future<Output = Result<()>> + Send;
+    fn format(&self, name: String, erase: bool, partition_type: String) -> impl std::future::Future<Output = Result<()>> + Send;
 
 
    //TODO: implement
