@@ -37,9 +37,10 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
 
     let size = create.size as f64;
     let free = len - size;
+    let free_bytes = free as u64;
 
     let size_pretty = bytes_to_pretty( &create.size, false);
-    let free_pretty = bytes_to_pretty( &free, false);
+    let free_pretty = bytes_to_pretty( &free_bytes, false);
     let step = hardware::get_step(&create.size);
 
     println!("step: {}", step);
@@ -68,7 +69,7 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
             .label("Erase")
             .on_toggle(|v| CreateMessage::EraseUpdate(v).into()),
         dropdown(
-            &COMMON_PARTITION_NAMES,
+            &*COMMON_PARTITION_NAMES,
             Some(create_clone.selected_partitition_type),
             |v| CreateMessage::PartitionTypeUpdate(v).into()
         ),

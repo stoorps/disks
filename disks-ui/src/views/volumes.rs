@@ -243,7 +243,7 @@ impl VolumesControl {
         &mut self,
         message: VolumesControlMessage,
         dialog: &mut Option<ShowDialog>,
-    ) -> Task<cosmic::app::Message<Message>> {
+    ) -> Task<cosmic::Action<Message>> {
 
     match message {
         VolumesControlMessage::SegmentSelected(index) => {
