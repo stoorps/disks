@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use tracing::{info, warn, error};
-use udisks2::{block::BlockProxy, drive::DriveProxy, partition::PartitionProxy, partitiontable::PartitionTableProxy, Client};
-use zbus::{
-    zvariant::OwnedObjectPath, Connection
+use tracing::{error, info, warn};
+use udisks2::{
+    Client, block::BlockProxy, drive::DriveProxy, partition::PartitionProxy,
+    partitiontable::PartitionTableProxy,
 };
+use zbus::{Connection, zvariant::OwnedObjectPath};
 
-use hardware_common::{get_usage_data, CreatePartitionInfo, Drive, COMMON_PARTITION_TYPES};
+use hardware_common::{COMMON_PARTITION_TYPES, CreatePartitionInfo, Drive, get_usage_data};
 
-use super::{manager::UDisks2ManagerProxy, PartitionModel};
+use super::{PartitionModel, manager::UDisks2ManagerProxy};
 
 #[derive(Debug, Clone)]
 pub struct DriveModel {
@@ -35,18 +36,13 @@ pub struct DriveModel {
     connection: Connection,
 }
 
-
-
-
 #[derive(Debug, Clone)]
 struct DriveBlockPair {
     block_path: OwnedObjectPath,
     drive_path: OwnedObjectPath,
 }
 
-impl DriveModel
-
-{
+impl DriveModel {
     pub async fn from_proxy(
         path: &str,
         block_path: &str,
@@ -72,7 +68,7 @@ impl DriveModel
             removable: drive_proxy.removable().await?,
             revision: drive_proxy.revision().await?,
             partition_table_type: None,
-            connection: Connection::system().await?
+            connection: Connection::system().await?,
         })
     }
 
@@ -92,14 +88,18 @@ impl DriveModel
             };
 
             //Drive nodes don't have a .Partition interface assigned.
-            let _ = match PartitionProxy::builder(&connection).path(&path)?.build().await {
+            let _ = match PartitionProxy::builder(&connection)
+                .path(&path)?
+                .build()
+                .await
+            {
                 Ok(e) => match e.table().await {
                     Ok(_) => {
                         continue;
                     }
-                    Err(_) => { } //We've found a drive
+                    Err(_) => {} //We've found a drive
                 },
-                Err(_) => { } //We've found a drive
+                Err(_) => {} //We've found a drive
             };
 
             match block_device.drive().await {
@@ -119,13 +119,21 @@ impl DriveModel
         let client = Client::new_for_connection(Connection::system().await?).await?;
         let drive_paths = Self::get_drive_paths(&connection).await?;
 
-
         let mut drives: HashMap<String, DriveModel> = HashMap::new();
         let mut usage_data = get_usage_data()?;
 
         for pair in drive_paths {
-            let drive_proxy = DriveProxy::builder(&connection).path(&pair.drive_path)?.build().await?;
-            let mut drive = match DriveModel::from_proxy(&pair.drive_path, &pair.block_path, &drive_proxy).await {
+            let drive_proxy = DriveProxy::builder(&connection)
+                .path(&pair.drive_path)?
+                .build()
+                .await?;
+            let mut drive = match DriveModel::from_proxy(
+                &pair.drive_path,
+                &pair.block_path,
+                &drive_proxy,
+            )
+            .await
+            {
                 Ok(d) => d,
                 Err(e) => {
                     warn!("Could not get drive: {}", e);
@@ -133,15 +141,18 @@ impl DriveModel
                 }
             };
 
-            let partition_table_proxy =
-                match PartitionTableProxy::builder(&connection).path(&pair.block_path)?.build().await {
-                    Ok(p) => p,
-                    Err(e) => {
-                        error!("Error getting partition table: {}", e);
-                        drives.insert(drive.name.clone(), drive);
-                        continue;
-                    }
-                };
+            let partition_table_proxy = match PartitionTableProxy::builder(&connection)
+                .path(&pair.block_path)?
+                .build()
+                .await
+            {
+                Ok(p) => p,
+                Err(e) => {
+                    error!("Error getting partition table: {}", e);
+                    drives.insert(drive.name.clone(), drive);
+                    continue;
+                }
+            };
 
             drive.partition_table_type = Some(partition_table_proxy.type_().await?);
 
@@ -154,14 +165,17 @@ impl DriveModel
             };
 
             for partition_path in partition_paths {
-                let partition_proxy =
-                    match PartitionProxy::builder(&connection).path(&partition_path)?.build().await {
-                        Ok(p) => p,
-                        Err(e) => {
-                            error!("Error getting partition info: {}", e);
-                            continue;
-                        }
-                    };
+                let partition_proxy = match PartitionProxy::builder(&connection)
+                    .path(&partition_path)?
+                    .build()
+                    .await
+                {
+                    Ok(p) => p,
+                    Err(e) => {
+                        error!("Error getting partition info: {}", e);
+                        continue;
+                    }
+                };
 
                 let short_name = partition_path.as_str().split("/").last();
 
@@ -173,12 +187,23 @@ impl DriveModel
                     None => None,
                 };
 
-                let block_proxy = BlockProxy::builder(&connection).path(&partition_path)?.build().await?;
+                let block_proxy = BlockProxy::builder(&connection)
+                    .path(&partition_path)?
+                    .build()
+                    .await?;
 
-
-                drive.partitions.push(PartitionModel::from_proxy(&client, pair.drive_path.to_string(), partition_path.clone(), usage, &partition_proxy, &block_proxy).await?);
+                drive.partitions.push(
+                    PartitionModel::from_proxy(
+                        &client,
+                        pair.drive_path.to_string(),
+                        partition_path.clone(),
+                        usage,
+                        &partition_proxy,
+                        &block_proxy,
+                    )
+                    .await?,
+                );
             }
-
 
             drives.insert(drive.name.clone(), drive);
         }
@@ -191,47 +216,53 @@ impl DriveModel
             })
         });
 
-
         Ok(drives)
     }
-
 }
 
-
 impl Drive for DriveModel {
-     fn pretty_name(&self) -> String {
+    fn pretty_name(&self) -> String {
         self.name.split("/").last().unwrap().replace("_", " ") //TODO: Handle unwrap
     }
 
-
-
-     async fn eject(&self) -> Result<()>
-    {
-        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
+    async fn eject(&self) -> Result<()> {
+        let proxy = DriveProxy::builder(&self.connection)
+            .path(self.path.clone())?
+            .build()
+            .await?;
         proxy.eject(HashMap::new()).await?;
         Ok(())
     }
 
-     async fn power_off(&self) -> Result<()>
-    {
-        let proxy = DriveProxy::builder(&self.connection).path(self.path.clone())?.build().await?;
+    async fn power_off(&self) -> Result<()> {
+        let proxy = DriveProxy::builder(&self.connection)
+            .path(self.path.clone())?
+            .build()
+            .await?;
         proxy.power_off(HashMap::new()).await?;
         Ok(())
     }
 
-
-     async fn create_partition(&self, info: CreatePartitionInfo) -> Result<()>
-    {
-        let partition_table_proxy = PartitionTableProxy::builder(&self.connection).path(self.block_path.clone())?.build().await?;
+    async fn create_partition(&self, info: CreatePartitionInfo) -> Result<()> {
+        let partition_table_proxy = PartitionTableProxy::builder(&self.connection)
+            .path(self.block_path.clone())?
+            .build()
+            .await?;
 
         let partition_type = &COMMON_PARTITION_TYPES[info.selected_partitition_type].ty;
 
-        partition_table_proxy.create_partition_and_format(info.offset, info.size, partition_type, &info.name, HashMap::new(), partition_type, HashMap::new()).await?;
+        partition_table_proxy
+            .create_partition_and_format(
+                info.offset,
+                info.size,
+                partition_type,
+                &info.name,
+                HashMap::new(),
+                partition_type,
+                HashMap::new(),
+            )
+            .await?;
 
         Ok(())
     }
-
-
-    }
-
-
+}

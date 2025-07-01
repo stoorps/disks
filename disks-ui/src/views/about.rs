@@ -1,6 +1,9 @@
-use cosmic::{cosmic_theme, iced::Alignment, theme, widget, Element};
+use cosmic::{Element, cosmic_theme, iced::Alignment, theme, widget};
 
-use crate::{app::{ Message, APP_ICON, REPOSITORY}, fl};
+use crate::{
+    app::{APP_ICON, Message, REPOSITORY},
+    fl,
+};
 
 pub fn about() -> Element<'static, Message> {
     let cosmic_theme::Spacing { space_xxs, .. } = theme::active().cosmic().spacing;
@@ -34,4 +37,3 @@ pub fn about() -> Element<'static, Message> {
         .spacing(space_xxs)
         .into()
 }
-

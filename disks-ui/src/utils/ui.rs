@@ -1,15 +1,14 @@
-use hardware::{pretty_to_bytes};
+use hardware::pretty_to_bytes;
 
 use std::borrow::Cow;
 
 use cosmic::{
-    cosmic_theme::Spacing,
-    iced::{self, alignment, Alignment, Background, Border, Color, Length, Shadow},
-    iced_widget::{self,column, row},
-    widget::{self, button, container},
     Element, Theme,
+    cosmic_theme::Spacing,
+    iced::{self, Alignment, Background, Border, Color, Length, Shadow, alignment},
+    iced_widget::{self, column, row},
+    widget::{self, button, container},
 };
-
 
 //spinner with editable value
 pub fn input_spinner<'a, Message: 'static + Clone>(
@@ -20,22 +19,21 @@ pub fn input_spinner<'a, Message: 'static + Clone>(
     max: f64,
     on_edit: impl Fn(f64) -> Message + 'static + Clone,
 ) -> Element<'a, Message> {
-
     let text_edit = on_edit.clone();
-   container(row![
-       button::text("-").on_press((on_edit.clone())(value - step)),
-       widget::text_input("",value_string.into()).width(Length::Fill).on_input(move |v| {
-
-
-        match pretty_to_bytes(&v) {
-            Ok(v) => (text_edit)((v as f64).clamp(min, max)),
-            Err(_) => (text_edit)(value), //TODO: Validation
-        }
-    }),
-       button::text("+").on_press((on_edit)(value + step)),
-    ]).into()
+    container(row![
+        button::text("-").on_press((on_edit.clone())(value - step)),
+        widget::text_input("", value_string.into())
+            .width(Length::Fill)
+            .on_input(move |v| {
+                match pretty_to_bytes(&v) {
+                    Ok(v) => (text_edit)((v as f64).clamp(min, max)),
+                    Err(_) => (text_edit)(value), //TODO: Validation
+                }
+            }),
+        button::text("+").on_press((on_edit)(value + step)),
+    ])
+    .into()
 }
-
 
 pub fn labelled_spinner<'a, Message: 'static + Clone>(
     label: impl Into<Cow<'a, str>>,
@@ -44,23 +42,20 @@ pub fn labelled_spinner<'a, Message: 'static + Clone>(
     step: f64,
     min: f64,
     max: f64,
-    on_press: impl Fn(f64) -> Message + 'static  + Clone,
+    on_press: impl Fn(f64) -> Message + 'static + Clone,
 ) -> Element<'a, Message> {
     iced_widget::row![
         widget::text(label.into())
             .align_x(Alignment::End)
             .width(Length::FillPortion(1)),
         // .class(theme::Text::Color(cosmic::theme::system_preference().cosmic().text_button.base.color.into())),
-        container(input_spinner(value_string, value, step, min, max, on_press)).width(Length::FillPortion(3)),
+        container(input_spinner(value_string, value, step, min, max, on_press))
+            .width(Length::FillPortion(3)),
     ]
     .align_y(alignment::Vertical::Center)
     .spacing(Spacing::default().space_s)
     .into()
 }
-
-
-
-
 
 pub fn labelled_info<'a, Message: 'static + Clone>(
     label: impl Into<String>,

@@ -1,10 +1,10 @@
 mod drive;
-mod partition;
 mod manager;
+mod partition;
 
 pub use drive::*;
-pub use partition::PartitionModel;
 pub use manager::*;
+pub use partition::PartitionModel;
 use thiserror::Error;
 
 // async fn get_size(path: impl Into<String> + std::fmt::Display) -> Result<String> {
@@ -20,15 +20,11 @@ use thiserror::Error;
 //     Ok(client.size_for_display(drive.size().await?, true, true))
 // }
 
-
 #[derive(Error, Debug)]
-pub enum DiskError
-{
+pub enum DiskError {
     #[error("The model {0} is not connected")]
     NotConnected(String),
 
     #[error("Zbus Error")]
     ZbusError(#[from] zbus::Error),
-
-    
 }

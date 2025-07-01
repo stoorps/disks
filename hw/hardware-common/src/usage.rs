@@ -1,7 +1,6 @@
-use std::process::Command;
-use serde::Deserialize;
 use anyhow::Result;
-
+use serde::Deserialize;
+use std::process::Command;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Usage {

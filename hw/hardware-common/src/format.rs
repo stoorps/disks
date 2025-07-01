@@ -1,6 +1,6 @@
+use anyhow::Result;
 use num_format::{Locale, ToFormattedString};
 use std::{cmp::min, f64};
-use anyhow::Result;
 
 pub fn bytes_to_pretty(bytes: &u64, add_bytes: bool) -> String {
     let mut steps = 0;
@@ -44,19 +44,19 @@ pub fn pretty_to_bytes(pretty: &str) -> Result<u64> {
     }
     let string_value = string_value.unwrap();
 
-    let mut val: f64 = string_value.parse()?; 
+    let mut val: f64 = string_value.parse()?;
     let unit = pretty.split_whitespace().last().unwrap();
 
     match unit {
-        "B" => steps = 0,   
-        "KB" => steps = 1,   
-        "MB" => steps = 2,   
-        "GB" => steps = 3,   
-        "TB" => steps = 4,   
-        "PB" => steps = 5,   
-        "EB" => steps = 6,   
-        "ZB" => steps = 7,   
-        "YB" => steps = 8,   
+        "B" => steps = 0,
+        "KB" => steps = 1,
+        "MB" => steps = 2,
+        "GB" => steps = 3,
+        "TB" => steps = 4,
+        "PB" => steps = 5,
+        "EB" => steps = 6,
+        "ZB" => steps = 7,
+        "YB" => steps = 8,
         _ => steps = 0,
     }
 
