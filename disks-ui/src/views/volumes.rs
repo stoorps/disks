@@ -424,7 +424,25 @@ impl VolumesControl {
             })
             .collect();
 
-        let selected = self.segments.get(self.selected_segment).cloned().unwrap(); // Handle unwrap
+        let selected = match self.segments.get(self.selected_segment).cloned() {
+            Some(segment) => segment,
+            None => {
+                // Handle the case where selected_segment is out of range
+                return container(
+                    column![
+                        cosmic::widget::Row::from_vec(vec![])
+                            .spacing(10)
+                            .width(Length::Fill),
+                        widget::Row::from_vec(vec![]).width(Length::Fill)
+                    ]
+                    .spacing(10),
+                )
+                .width(Length::Fill)
+                .padding(10)
+                .class(cosmic::style::Container::Card)
+                .into();
+            }
+        };
         let mut action_bar: Vec<Element<Message>> = vec![];
 
         action_bar.push(match selected.partition {
