@@ -542,7 +542,7 @@ impl Application for AppModel {
             Message::RestoreImageTo => todo!(),
             Message::Surface(action) => {
                 return cosmic::task::message(cosmic::Action::Cosmic(
-                    cosmic::app::Action::Surface(action)
+                    cosmic::app::Action::Surface(action),
                 ));
             }
         }
