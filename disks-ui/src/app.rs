@@ -541,9 +541,9 @@ impl Application for AppModel {
             Message::CreateDiskFrom => todo!(),
             Message::RestoreImageTo => todo!(),
             Message::Surface(action) => {
-                return cosmic::task::message(cosmic::Action::Cosmic(cosmic::app::Action::Surface(
-                    action,
-                )));
+                return cosmic::task::message(cosmic::Action::Cosmic(
+                    cosmic::app::Action::Surface(action)
+                ));
             }
         }
         Task::none()
