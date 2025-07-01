@@ -39,7 +39,7 @@ pub fn create_partition<'a>(create: CreatePartitionInfo) -> Element<'a, Message>
     let free = len - size;
 
     let size_pretty = bytes_to_pretty( &create.size, false);
-    let free_pretty = bytes_to_pretty( &create.size, false);
+    let free_pretty = bytes_to_pretty( &free, false);
     let step = hardware::get_step(&create.size);
 
     println!("step: {}", step);
